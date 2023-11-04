@@ -10,8 +10,8 @@ TEMPCOLOR = str(ft.colors.RED)
 imagenes = []  # Arreglo temporal de imagenes
 
 
-# Funcion para cambiar el color del fondo cuando entra el mouse en las imagenes
-def on_hover(e):
+def on_hover(e):  # Funcion para cambiar el color del fondo cuando entra el mouse en las imagenes
+
     e.control.bgcolor = WHITECOLOR if e.data == "true" else BLACKCOLOR
     e.control.update()
 
@@ -44,6 +44,7 @@ def on_click_image(e):  # Respuesta al evento de clic en las imagenes
 
 
 def add_image(i, images):  # Agrega las imagenes a un contenedor
+
     images.controls.append(
         ft.Container(
             content=
@@ -63,9 +64,40 @@ def add_image(i, images):  # Agrega las imagenes a un contenedor
     )
 
 
-def main(page: ft.Page):
-    # Widget del app bar (Barra de arriba)
-    page.appbar = ft.AppBar(
+def rail_widget(page):  # Widget del rail de la izquierda
+
+    rail = ft.NavigationRail(
+        selected_index=None,
+        label_type=ft.NavigationRailLabelType.ALL,
+        min_width=100,
+        min_extended_width=400,
+        leading=ft.FloatingActionButton(icon=ft.icons.HOME, text="Inicio", on_click=lambda _: page.go("/")),
+        group_alignment=-0.9,
+        destinations=[
+            ft.NavigationRailDestination(
+                icon_content=ft.IconButton(icon=ft.icons.FAVORITE_BORDER,
+                                           on_click=lambda _: page.go("/favorite")),
+                label="Favoritos",
+            ),
+            ft.NavigationRailDestination(
+                icon_content=ft.IconButton(icon=ft.icons.RESTORE_FROM_TRASH,
+                                           on_click=lambda _: page.go("/papelera")),
+                label="Papelera",
+            ),
+            ft.NavigationRailDestination(
+                icon_content=ft.IconButton(icon=ft.icons.SETTINGS_OUTLINED,
+                                           on_click=lambda _: page.go("/ajustes")),
+                label="Ajustes",
+            ),
+        ],
+        on_change=None,
+    )
+    return rail
+
+
+def app_bar_widget():  # Widget del app bar (Barra de arriba)
+
+    appbar = ft.AppBar(
         leading=ft.Icon(ft.icons.HOME),
         leading_width=40,
         title=ft.Text("Sticker Hunt"),
@@ -86,34 +118,11 @@ def main(page: ft.Page):
             )
         ],
     )
+    return appbar
 
-    # Widget del rail de la izquierda
-    rail = ft.NavigationRail(
-        selected_index=0,
-        label_type=ft.NavigationRailLabelType.ALL,
-        min_width=100,
-        min_extended_width=400,
-        leading=ft.FloatingActionButton(icon=ft.icons.CREATE, text="Crear"),
-        group_alignment=-0.9,
-        destinations=[
-            ft.NavigationRailDestination(
-                icon=ft.icons.FAVORITE_BORDER, selected_icon=ft.icons.FAVORITE, label="Favoritos"
-            ),
-            ft.NavigationRailDestination(
-                icon_content=ft.Icon(ft.icons.HISTORY_TOGGLE_OFF),
-                selected_icon_content=ft.Icon(ft.icons.HISTORY_TOGGLE_OFF_SHARP),
-                label="Historial",
-            ),
-            ft.NavigationRailDestination(
-                icon=ft.icons.SETTINGS_OUTLINED,
-                selected_icon_content=ft.Icon(ft.icons.SETTINGS),
-                label_content=ft.Text("Ajustes"),
-            ),
-        ],
-        on_change=lambda e: print("Selected destination:", e.control.selected_index),
-    )
 
-    # Creamos un gridView donde se mostraran las imagenes
+def images_widget():  # Creamos un gridView donde se mostraran las imagenes
+
     images = ft.GridView(
         expand=1,
         runs_count=5,
@@ -122,25 +131,97 @@ def main(page: ft.Page):
         spacing=5,
         run_spacing=5,
     )
+    return images
 
-    # Ciclo for para añadir las imagenes en el GridView
-    for i in range(0, 20):
-        add_image(i, images)
+
+def main(page: ft.Page):
+
+    def route_change(route):  # Funcion para administrar el cambio de views
+        page.views.clear()
+        images = images_widget()
+        for i in range(0, 70):
+            add_image(i, images)
+            page.update()
+        page.views.append(
+            ft.View(
+                "/",  # View del inicio
+                [
+                    app_bar_widget(),
+                    ft.Row(
+                        [
+                            ft.Column([images], alignment=ft.MainAxisAlignment.START, expand=True),
+                            ft.VerticalDivider(width=1),
+                            rail_widget(page),
+                        ],
+                        expand=True,
+                    ),
+                ],
+            )
+        )
+        if page.route == "/favorite":  # View de los favoritos
+            page.views.append(
+                ft.View(
+                    "/favorite",
+                    [
+                        app_bar_widget(),
+                        ft.Row(
+                            [
+                                ft.Column([ft.Text("Imagenes Favoritas")], alignment=ft.MainAxisAlignment.START,
+                                          expand=True),
+                                ft.VerticalDivider(width=1),
+                                rail_widget(page),
+                            ],
+                            expand=True,
+                        ),
+                    ],
+                )
+            )
+        if page.route == "/papelera":  # View de la papelera
+            page.views.append(
+                ft.View(
+                    "/papelera",
+                    [
+                        app_bar_widget(),
+                        ft.Row(
+                            [
+                                ft.Column([ft.Text("Papelera")], alignment=ft.MainAxisAlignment.START,
+                                          expand=True),
+                                ft.VerticalDivider(width=1),
+                                rail_widget(page),
+                            ],
+                            expand=True,
+                        ),
+                    ],
+                )
+            )
+        if page.route == "/ajustes":  # View de los ajustes
+            page.views.append(
+                ft.View(
+                    "/ajustes",
+                    [
+                        app_bar_widget(),
+                        ft.Row(
+                            [
+                                ft.Column([ft.Text("Ajustes")], alignment=ft.MainAxisAlignment.START,
+                                          expand=True),
+                                ft.VerticalDivider(width=1),
+                                rail_widget(page),
+                            ],
+                            expand=True,
+                        ),
+                    ],
+                )
+            )
         page.update()
 
-    # Agregamos las imagenes en una columna, en otra un divisor y ultima el rail
-    page.add(
-        ft.Row(
-            [
-                ft.Column([images], alignment=ft.MainAxisAlignment.START, expand=True),
-                ft.VerticalDivider(width=1),
-                rail,
-            ],
-            expand=True,
-        )
-    )
+    def view_pop():
+        page.views.pop()
+        top_view = page.views[-1]
+        page.go(top_view.route)
+
+    page.on_route_change = route_change
+    page.on_view_pop = view_pop
+    page.go(page.route)
 
 
 ft.app(target=main)
-
-# Agregar en settings, con un popmenuButton ,  modo claro y about (creditos)
