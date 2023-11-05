@@ -1,6 +1,4 @@
 import time
-import queue
-
 import flet as ft
 
 # Colores usados en los efectos
@@ -15,7 +13,6 @@ BG_COLOR_IMAGES = str(ft.colors.SURFACE_VARIANT)
 TIEMPODELETE = 5
 
 imagenes = []  # Arreglo temporal de imagenes
-papeleraQ = queue.Queue()  # papelera
 papeleraList = []
 
 
@@ -44,18 +41,38 @@ def on_click_image(e):  # Respuesta al evento de clic en las imagenes
     e.control.bgcolor = HOVER_COLOR_HOME
     e.control.update()
 
-    # Añadimos al arreglo de favoritos la direccion de la imagen
-    imagenes.append(e.control.content.src)
+    # Guardamos la direccion de la imagen
+    source_image = str(e.control.content.src)
+
+    def close_dlg(e):
+        dlg_modal.open = False
+        e.page.update()
+
+    def yes_option_fav(e):
+        imagenes.append(source_image)
+        print("Se agrego")
+        close_dlg(e)
+
+    def no_option_fav(e):
+        print("No se agrego")
+        close_dlg(e)
 
     # Alert dialog de favorito
-    dlg_modal = dlg = ft.AlertDialog(
-        title=ft.Text("¡Guardado!"), content=ft.Text("Se agrego correctamente a favoritos"),
-        on_dismiss=lambda e: print("Alerta cerrada")
+    dlg_modal = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("¡Confirmacion!"),
+        content=ft.Text("¿Quieres agregar esta imagen a favoritos?"),
+        actions=[
+            ft.TextButton("Si", on_click=yes_option_fav),
+            ft.TextButton("No", on_click=no_option_fav),
+        ],
+        actions_alignment=ft.MainAxisAlignment.END,
+        on_dismiss=no_option_fav,
     )
 
     def open_dlg(j):
         j.page.dialog = dlg_modal
-        dlg.open = True
+        dlg_modal.open = True
         j.page.update()
 
     open_dlg(e)
@@ -70,22 +87,39 @@ def on_click_image_favorites(e):  # Respuesta al evento de clic en las imagenes
     e.control.bgcolor = HOVER_COLOR_FAV
     e.control.update()
 
-    # Añadimos al arrar de papelera
-    papeleraList.append(e.control.content.src)
+    # Guardamos la url de la imagnen
+    elemento = str(e.control.content.src)
 
-    # Eliminamos el elemento de favoritos
-    imagenes.remove(e.control.content.src)
+    def close_dlg(e):
+        dlg_modal.open = False
+        e.page.update()
 
-    # Alert dialog de favorito
-    dlg_modal = dlg = ft.AlertDialog(
-        title=ft.Text("¡Aviso!"), content=ft.Text("Se mando el archivo a la papelera"),
-        on_dismiss=lambda e: print("Alerta cerrada")
+    def yes_option_fav(e):
+        papeleraList.append(elemento)
+        imagenes.remove(elemento)
+        print("Se elimino de fav")
+        close_dlg(e)
+
+    def no_option_fav(e):
+        print("No se quito")
+        close_dlg(e)
+
+    # Alert dialog de papelera
+    dlg_modal = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("¡AVISO!"),
+        content=ft.Text("¿Quieres mandar a la papelera este elemento?"),
+        actions=[
+            ft.TextButton("Si", on_click=yes_option_fav),
+            ft.TextButton("No", on_click=no_option_fav),
+        ],
+        actions_alignment=ft.MainAxisAlignment.END,
+        on_dismiss=no_option_fav,
     )
-    e.control.update()
 
     def open_dlg(j):
         j.page.dialog = dlg_modal
-        dlg.open = True
+        dlg_modal.open = True
         j.page.update()
 
     open_dlg(e)
@@ -100,19 +134,38 @@ def on_click_image_papelera(e):  # Respuesta al evento de clic en las imagenes
     e.control.bgcolor = HOVER_COLOR_FAV
     e.control.update()
 
-    # Eliminamos el elemento de la papelera
-    papeleraList.remove(e.control.content.src)
+    # Guardamos la url de la imagnen
+    elemento = str(e.control.content.src)
 
-    # Alert dialog de favorito
-    dlg_modal = dlg = ft.AlertDialog(
-        title=ft.Text("¡ELIMINADO!"), content=ft.Text("Se elimino el elemento definitivamente"),
-        on_dismiss=lambda e: print("Alerta cerrada")
+    def close_dlg(e):
+        dlg_modal.open = False
+        e.page.update()
+
+    def yes_option_fav(e):
+        papeleraList.remove(elemento)
+        print("Se elimino permanentemente")
+        close_dlg(e)
+
+    def no_option_fav(e):
+        print("No se quito")
+        close_dlg(e)
+
+    # Alert dialog de eliminacion
+    dlg_modal = ft.AlertDialog(
+        modal=True,
+        title=ft.Text("¡IMPORTANTE!"),
+        content=ft.Text("¿Quieres eliminar definitivamente este elemento?"),
+        actions=[
+            ft.TextButton("Si", on_click=yes_option_fav),
+            ft.TextButton("No", on_click=no_option_fav),
+        ],
+        actions_alignment=ft.MainAxisAlignment.END,
+        on_dismiss=no_option_fav,
     )
-    e.control.update()
 
     def open_dlg(j):
         j.page.dialog = dlg_modal
-        dlg.open = True
+        dlg_modal.open = True
         j.page.update()
 
     open_dlg(e)
@@ -158,19 +211,6 @@ def app_bar_widget():  # Widget del app bar (Barra de arriba)
         automatically_imply_leading=True,
         center_title=False,
         bgcolor=BG_COLOR_APPBAR,
-        actions=[
-            ft.TextField(label="Buscar sticker:", hint_text="Ingresa tu busqueda:", content_padding=10, ),
-            ft.FloatingActionButton(
-                content=ft.Row(
-                    [ft.Icon(ft.icons.SEARCH), ft.Text("Buscar")],
-                    spacing=10,
-                ),
-                bgcolor=BG_COLOR_APPBAR,
-                shape=ft.RoundedRectangleBorder(radius=10),
-                width=100,
-                mini=True,
-            )
-        ],
     )
     return appbar
 
