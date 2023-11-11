@@ -234,8 +234,8 @@ def add_image(i, images):  # Agrega las imagenes a un contenedor
         ft.Container(
             content=
             ft.Image(
-                src=f"https://picsum.photos/150/150?{i}",
-                fit=ft.ImageFit.NONE,
+                src=f"images/{i}.jpg",
+                fit=ft.ImageFit.FILL,
                 repeat=ft.ImageRepeat.NO_REPEAT,
                 border_radius=ft.border_radius.all(10),
             ),
@@ -255,7 +255,7 @@ def add_image_favorites(i, favorites):
             content=
             ft.Image(
                 src=f"{imagenes[i]}",
-                fit=ft.ImageFit.NONE,
+                fit=ft.ImageFit.FILL,
                 repeat=ft.ImageRepeat.NO_REPEAT,
                 border_radius=ft.border_radius.all(10),
             ),
@@ -275,7 +275,7 @@ def add_image_papelera(i, papelera):
             content=
             ft.Image(
                 src=f"{papeleraList[i]}",
-                fit=ft.ImageFit.NONE,
+                fit=ft.ImageFit.FILL,
                 repeat=ft.ImageRepeat.NO_REPEAT,
                 border_radius=ft.border_radius.all(10),
             ),
@@ -311,7 +311,7 @@ def main(page: ft.Page):
         favoritos = images_widget()
         papelera = images_widget()
 
-        for i in range(0, 50):
+        for i in range(0, 5):
             add_image(i, images)
             page.update()
 
