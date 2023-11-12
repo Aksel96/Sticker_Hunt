@@ -1,3 +1,5 @@
+import os
+import shutil
 import time
 import flet as ft
 
@@ -9,12 +11,21 @@ TEMPCOLOR = str(ft.colors.WHITE)
 BG_COLOR_APPBAR = str(ft.colors.SURFACE_VARIANT)
 BG_COLOR_IMAGES = str(ft.colors.SURFACE_VARIANT)
 
-# Tiempo para borrar de la papelera
-TIEMPODELETE = 5
 
-imagenes = []  # Arreglo temporal de imagenes
+ruta_imagenes = "favorites"
+imagenes = []  # Arreglo temporal de imagenes de favoritos
 papeleraList = []
 
+elementos_imagenes = os.listdir(ruta_imagenes)
+
+for elemento in elementos_imagenes:
+    imagenes.append(elemento)
+
+ruta_trash = "trash"
+elemento_trash = os.listdir(ruta_trash)
+
+for item in elemento_trash:
+    papeleraList.append(item)
 
 def on_hover(e):  # Funcion para cambiar el color del fondo cuando entra el mouse en las imagenes
 
@@ -43,13 +54,17 @@ def on_click_image(e):  # Respuesta al evento de clic en las imagenes
 
     # Guardamos la direccion de la imagen
     source_image = str(e.control.content.src)
-
+    print("Source elemtno home",source_image)
     def close_dlg(e):
         dlg_modal.open = False
         e.page.update()
 
     def yes_option_fav(e):
-        imagenes.append(source_image)
+        split = source_image.split("/")
+        imagenes.append(split[1])
+        origen = source_image
+        destino = "favorites"
+        shutil.copy(origen, destino)
         print("Se agrego")
         close_dlg(e)
 
@@ -88,15 +103,20 @@ def on_click_image_favorites(e):  # Respuesta al evento de clic en las imagenes
     e.control.update()
 
     # Guardamos la url de la imagnen
-    elemento = str(e.control.content.src)
-
+    elemento_fav = str(e.control.content.src)
+    print("souce elemento fav",elemento_fav)
     def close_dlg(e):
         dlg_modal.open = False
         e.page.update()
 
     def yes_option_fav(e):
-        papeleraList.append(elemento)
-        imagenes.remove(elemento)
+        split_fav = elemento_fav.split("/")
+        papeleraList.append(split_fav[1])
+        imagenes.remove(split_fav[1])
+        origen = elemento_fav
+        destino = "trash"
+        shutil.copy(origen, destino)
+        os.remove(f"favorites/{split_fav[1]}")
         print("Se elimino de fav")
         close_dlg(e)
 
@@ -135,14 +155,17 @@ def on_click_image_papelera(e):  # Respuesta al evento de clic en las imagenes
     e.control.update()
 
     # Guardamos la url de la imagnen
-    elemento = str(e.control.content.src)
+    elemento_papelera = str(e.control.content.src)
+    print("Source elemtno home", elemento_papelera)
 
     def close_dlg(e):
         dlg_modal.open = False
         e.page.update()
 
     def yes_option_fav(e):
-        papeleraList.remove(elemento)
+        split_trash = elemento_papelera.split("/")
+        papeleraList.remove(split_trash[1])
+        os.remove(elemento_papelera)
         print("Se elimino permanentemente")
         close_dlg(e)
 
@@ -249,12 +272,12 @@ def add_image(i, images):  # Agrega las imagenes a un contenedor
     )
 
 
-def add_image_favorites(i, favorites):
+def add_image_favorites(i,favorites):
     favorites.controls.append(
         ft.Container(
             content=
             ft.Image(
-                src=f"{imagenes[i]}",
+                src=f"images/{imagenes[i]}",
                 fit=ft.ImageFit.FILL,
                 repeat=ft.ImageRepeat.NO_REPEAT,
                 border_radius=ft.border_radius.all(10),
@@ -269,12 +292,12 @@ def add_image_favorites(i, favorites):
     )
 
 
-def add_image_papelera(i, papelera):
+def add_image_papelera(i,papelera):
     papelera.controls.append(
         ft.Container(
             content=
             ft.Image(
-                src=f"{papeleraList[i]}",
+                src=f"trash/{papeleraList[i]}",
                 fit=ft.ImageFit.FILL,
                 repeat=ft.ImageRepeat.NO_REPEAT,
                 border_radius=ft.border_radius.all(10),
@@ -311,13 +334,13 @@ def main(page: ft.Page):
         favoritos = images_widget()
         papelera = images_widget()
 
-        for i in range(0, 5):
+        for i in range(0, 59):
             add_image(i, images)
             page.update()
 
         if imagenes:
             for i in range(len(imagenes)):
-                add_image_favorites(i, favoritos)
+                add_image_favorites(i,favoritos)
                 page.update()
 
         if papeleraList:
