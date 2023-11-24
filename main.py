@@ -11,7 +11,6 @@ TEMPCOLOR = str(ft.colors.WHITE)
 BG_COLOR_APPBAR = str(ft.colors.SURFACE_VARIANT)
 BG_COLOR_IMAGES = str(ft.colors.SURFACE_VARIANT)
 
-
 ruta_imagenes = "favorites"
 imagenes = []  # Arreglo temporal de imagenes de favoritos
 papeleraList = []
@@ -26,6 +25,7 @@ elemento_trash = os.listdir(ruta_trash)
 
 for item in elemento_trash:
     papeleraList.append(item)
+
 
 def on_hover(e):  # Funcion para cambiar el color del fondo cuando entra el mouse en las imagenes
 
@@ -54,7 +54,8 @@ def on_click_image(e):  # Respuesta al evento de clic en las imagenes
 
     # Guardamos la direccion de la imagen
     source_image = str(e.control.content.src)
-    print("Source elemtno home",source_image)
+    print("Source elemtno home", source_image)
+
     def close_dlg(e):
         dlg_modal.open = False
         e.page.update()
@@ -104,20 +105,24 @@ def on_click_image_favorites(e):  # Respuesta al evento de clic en las imagenes
 
     # Guardamos la url de la imagnen
     elemento_fav = str(e.control.content.src)
-    print("souce elemento fav",elemento_fav)
+    print("souce elemento fav", elemento_fav)
+
     def close_dlg(e):
         dlg_modal.open = False
         e.page.update()
 
     def yes_option_fav(e):
         split_fav = elemento_fav.split("/")
-        papeleraList.append(split_fav[1])
-        imagenes.remove(split_fav[1])
-        origen = elemento_fav
-        destino = "trash"
-        shutil.copy(origen, destino)
-        os.remove(f"favorites/{split_fav[1]}")
-        print("Se elimino de fav")
+        if split_fav[1] in imagenes:
+            papeleraList.append(split_fav[1])
+            imagenes.remove(split_fav[1])
+            origen = elemento_fav
+            destino = "trash"
+            shutil.copy(origen, destino)
+            os.remove(f"favorites/{split_fav[1]}")
+            print("Se elimino de fav")
+        else:
+            print("Ese elemento no existe")
         close_dlg(e)
 
     def no_option_fav(e):
@@ -164,9 +169,12 @@ def on_click_image_papelera(e):  # Respuesta al evento de clic en las imagenes
 
     def yes_option_fav(e):
         split_trash = elemento_papelera.split("/")
-        papeleraList.remove(split_trash[1])
-        os.remove(elemento_papelera)
-        print("Se elimino permanentemente")
+        if split_trash[1] in papeleraList:
+            papeleraList.remove(split_trash[1])
+            os.remove(elemento_papelera)
+            print("Se elimino permanentemente")
+        else:
+            print("Ese elemento no existe")
         close_dlg(e)
 
     def no_option_fav(e):
@@ -272,7 +280,7 @@ def add_image(i, images):  # Agrega las imagenes a un contenedor
     )
 
 
-def add_image_favorites(i,favorites):
+def add_image_favorites(i, favorites):
     favorites.controls.append(
         ft.Container(
             content=
@@ -292,7 +300,7 @@ def add_image_favorites(i,favorites):
     )
 
 
-def add_image_papelera(i,papelera):
+def add_image_papelera(i, papelera):
     papelera.controls.append(
         ft.Container(
             content=
@@ -340,7 +348,7 @@ def main(page: ft.Page):
 
         if imagenes:
             for i in range(len(imagenes)):
-                add_image_favorites(i,favoritos)
+                add_image_favorites(i, favoritos)
                 page.update()
 
         if papeleraList:
